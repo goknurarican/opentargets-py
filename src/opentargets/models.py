@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Optional
+
 from pydantic import BaseModel, ConfigDict, Field
 
 
@@ -72,7 +74,7 @@ class Drug(BaseModel):
     mechanism_of_action: str = Field("", alias="mechanismOfAction")
     synonyms: list[str] = Field(default_factory=list)
     trade_names: list[str] = Field(default_factory=list, alias="tradeNames")
-    max_clinical_trial_phase: float | None = Field(
+    max_clinical_trial_phase: Optional[float] = Field(
         None, alias="maximumClinicalTrialPhase"
     )
 
@@ -148,4 +150,6 @@ class DrugIndication(BaseModel):
 
     disease_id: str = ""
     disease_name: str = ""
-    max_phase_for_indication: float | None = Field(None, alias="maxPhaseForIndication")
+    max_phase_for_indication: Optional[float] = Field(
+        None, alias="maxPhaseForIndication"
+    )

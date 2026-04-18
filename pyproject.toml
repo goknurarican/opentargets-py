@@ -57,6 +57,7 @@ line-length = 88
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "UP", "B", "SIM"]
+ignore = ["UP045"]  # Optional[X] needed for Python 3.9 Pydantic compat
 
 [tool.mypy]
 python_version = "3.9"
