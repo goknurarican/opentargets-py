@@ -148,6 +148,4 @@ class DrugIndication(BaseModel):
 
     disease_id: str = ""
     disease_name: str = ""
-    max_phase_for_indication: float | None = Field(
-        None, alias="maxPhaseForIndication"
-    )
+    max_phase_for_indication: float | None = Field(None, alias="maxPhaseForIndication")

@@ -30,9 +30,7 @@ def test_target_model_aliases():
 
 
 def test_target_is_frozen():
-    t = Target.model_validate(
-        {"id": "X", "approvedSymbol": "X", "approvedName": "X"}
-    )
+    t = Target.model_validate({"id": "X", "approvedSymbol": "X", "approvedName": "X"})
     with pytest.raises(ValidationError):
         t.id = "Y"  # type: ignore[misc]
 

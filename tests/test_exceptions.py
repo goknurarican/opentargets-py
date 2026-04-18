@@ -39,6 +39,7 @@ def test_rate_limit_error_without_retry_after():
 
 def test_exception_hierarchy():
     from opentargets.exceptions import OpenTargetsError
+
     assert isinstance(APIError(404, "not found"), OpenTargetsError)
     assert isinstance(RateLimitError(), APIError)
     assert isinstance(QueryError([]), OpenTargetsError)

@@ -388,9 +388,7 @@ def _parse_target(raw: dict[str, Any]) -> Target:
 
 def _parse_disease(raw: dict[str, Any]) -> Disease:
     areas_raw: list[Any] = raw.get("therapeuticAreas") or []
-    areas = [
-        a["name"] if isinstance(a, dict) else str(a) for a in areas_raw
-    ]
+    areas = [a["name"] if isinstance(a, dict) else str(a) for a in areas_raw]
     return Disease.model_validate(
         {
             "id": raw.get("id", ""),
