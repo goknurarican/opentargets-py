@@ -1,7 +1,7 @@
 # opentargets-py
 
-[![PyPI version](https://badge.fury.io/py/opentargets-py.svg)](https://pypi.org/project/opentargets-py/)
-[![Python versions](https://img.shields.io/pypi/pyversions/opentargets-py)](https://pypi.org/project/opentargets-py/)
+[![PyPI version](https://img.shields.io/pypi/v/opentargets-py?cache=refresh)](https://pypi.org/project/opentargets-py/)
+[![Python versions](https://img.shields.io/pypi/pyversions/opentargets-py?cache=refresh)](https://pypi.org/project/opentargets-py/)
 [![CI](https://github.com/goknurarican/opentargets-py/actions/workflows/ci.yml/badge.svg)](https://github.com/goknurarican/opentargets-py/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 
