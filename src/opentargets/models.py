@@ -71,11 +71,11 @@ class Drug(BaseModel):
     id: str
     name: str
     drug_type: str = Field("", alias="drugType")
-    mechanism_of_action: str = Field("", alias="mechanismOfAction")
+    mechanism_of_action: str = ""
     synonyms: list[str] = Field(default_factory=list)
     trade_names: list[str] = Field(default_factory=list, alias="tradeNames")
-    max_clinical_trial_phase: Optional[float] = Field(
-        None, alias="maximumClinicalTrialPhase"
+    max_clinical_trial_phase: Optional[str] = Field(
+        None, alias="maximumClinicalStage"
     )
 
 
@@ -150,6 +150,6 @@ class DrugIndication(BaseModel):
 
     disease_id: str = ""
     disease_name: str = ""
-    max_phase_for_indication: Optional[float] = Field(
-        None, alias="maxPhaseForIndication"
+    max_phase_for_indication: Optional[str] = Field(
+        None, alias="maxClinicalStage"
     )

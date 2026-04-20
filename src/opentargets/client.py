@@ -157,7 +157,7 @@ class OpenTargetsClient:
         """
         ensembl_id = self._resolve_target(target_id)
         data = self._gql.execute(TARGET_DRUGS_QUERY, {"ensemblId": ensembl_id})
-        rows = (data.get("target") or {}).get("knownDrugs", {}).get("rows") or []
+        rows = (data.get("target") or {}).get("drugAndClinicalCandidates", {}).get("rows") or []
         return [_parse_drug(r["drug"]) for r in rows if "drug" in r]
 
     # ------------------------------------------------------------------
@@ -321,14 +321,23 @@ class OpenTargetsClient:
             association exists.
         """
         ensembl_id = self._resolve_target(target_id)
-        data = self._gql.execute(
-            ASSOCIATION_QUERY,
-            {"ensemblId": ensembl_id, "efoId": disease_id},
+        rows = self._gql.paginate(
+            TARGET_ASSOCIATIONS_QUERY,
+            {"ensemblId": ensembl_id},
+            data_path=["target", "associatedDiseases"],
+            size=25,
         )
-        raw = data.get("associationByDatatypes")
-        if not raw:
+        match = next(
+            (r for r in rows if (r.get("disease") or {}).get("id") == disease_id),
+            None,
+        )
+        if match is None:
             return None
-        return _parse_association_raw(raw)
+        symbol = ""
+        d = self._gql.execute(TARGET_QUERY, {"ensemblId": ensembl_id})
+        if d.get("target"):
+            symbol = d["target"].get("approvedSymbol", "")
+        return _parse_target_association(match, ensembl_id, symbol)
 
     # ------------------------------------------------------------------
     # Lifecycle
@@ -371,19 +380,17 @@ class OpenTargetsClient:
 
 
 def _parse_target(raw: dict[str, Any]) -> Target:
-    proto: dict[str, Any] = {
-        "id": raw.get("id", ""),
-        "approvedSymbol": raw.get("approvedSymbol", ""),
-        "approvedName": raw.get("approvedName", ""),
-        "biotype": raw.get("biotype", ""),
-        "functionDescriptions": raw.get("functionDescriptions") or [],
-        "description": "",
-    }
-    pa = raw.get("description") or raw.get("proteinAnnotations") or {}
-    if isinstance(pa, dict):
-        funcs = pa.get("functions") or []
-        proto["description"] = funcs[0] if funcs else ""
-    return Target.model_validate(proto)
+    descs: list[str] = raw.get("functionDescriptions") or []
+    return Target.model_validate(
+        {
+            "id": raw.get("id", ""),
+            "approvedSymbol": raw.get("approvedSymbol", ""),
+            "approvedName": raw.get("approvedName", ""),
+            "biotype": raw.get("biotype", ""),
+            "functionDescriptions": descs,
+            "description": descs[0] if descs else "",
+        }
+    )
 
 
 def _parse_disease(raw: dict[str, Any]) -> Disease:
@@ -401,15 +408,18 @@ def _parse_disease(raw: dict[str, Any]) -> Disease:
 
 
 def _parse_drug(raw: dict[str, Any]) -> Drug:
+    moa_obj = raw.get("mechanismsOfAction") or {}
+    moa_rows: list[dict[str, Any]] = moa_obj.get("rows") or []
+    moa_str = moa_rows[0].get("mechanismOfAction", "") if moa_rows else ""
     return Drug.model_validate(
         {
             "id": raw.get("id", ""),
             "name": raw.get("name", ""),
             "drugType": raw.get("drugType", ""),
-            "mechanismOfAction": raw.get("mechanismOfAction", ""),
+            "mechanism_of_action": moa_str,
             "synonyms": raw.get("synonyms") or [],
             "tradeNames": raw.get("tradeNames") or [],
-            "maximumClinicalTrialPhase": raw.get("maximumClinicalTrialPhase"),
+            "maximumClinicalStage": raw.get("maximumClinicalStage"),
         }
     )
 
@@ -477,7 +487,7 @@ def _parse_drug_indication(row: dict[str, Any]) -> DrugIndication:
         {
             "disease_id": disease.get("id", ""),
             "disease_name": disease.get("name", ""),
-            "maxPhaseForIndication": row.get("maxPhaseForIndication"),
+            "maxClinicalStage": row.get("maxClinicalStage"),
         }
     )
 

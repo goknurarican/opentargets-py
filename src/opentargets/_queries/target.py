@@ -8,9 +8,6 @@ query TargetInfo($ensemblId: String!) {
     approvedName
     biotype
     functionDescriptions
-    description: proteinAnnotations {
-      functions
-    }
   }
 }
 """
@@ -43,17 +40,21 @@ query TargetDrugs($ensemblId: String!) {
   target(ensemblId: $ensemblId) {
     id
     approvedSymbol
-    knownDrugs {
+    drugAndClinicalCandidates {
       count
       rows {
         drug {
           id
           name
           drugType
-          maximumClinicalTrialPhase
+          maximumClinicalStage
           synonyms
           tradeNames
-          mechanismOfAction
+          mechanismsOfAction {
+            rows {
+              mechanismOfAction
+            }
+          }
         }
       }
     }

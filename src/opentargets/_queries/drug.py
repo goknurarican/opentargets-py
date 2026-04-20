@@ -6,10 +6,14 @@ query DrugInfo($chemblId: String!) {
     id
     name
     drugType
-    mechanismOfAction
+    maximumClinicalStage
     synonyms
     tradeNames
-    maximumClinicalTrialPhase
+    mechanismsOfAction {
+      rows {
+        mechanismOfAction
+      }
+    }
   }
 }
 """
@@ -22,7 +26,7 @@ query DrugIndications($chemblId: String!) {
     indications {
       count
       rows {
-        maxPhaseForIndication
+        maxClinicalStage
         disease {
           id
           name

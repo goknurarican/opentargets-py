@@ -87,7 +87,7 @@ def test_get_drug(drug_response):
     drug = client.get_drug("CHEMBL939")
     assert drug.id == "CHEMBL939"
     assert drug.name == "ERLOTINIB"
-    assert drug.max_clinical_trial_phase == 4.0
+    assert drug.max_clinical_trial_phase == "APPROVAL"
 
 
 @respx.mock
@@ -149,7 +149,7 @@ def test_get_drug_indications(drug_indications_response):
     indications = client.get_drug_indications("CHEMBL939")
     assert len(indications) == 1
     assert indications[0].disease_name == "lung carcinoma"
-    assert indications[0].max_phase_for_indication == 4.0
+    assert indications[0].max_phase_for_indication == "APPROVAL"
 
 
 def test_client_context_manager():

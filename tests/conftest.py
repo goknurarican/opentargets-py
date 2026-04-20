@@ -24,10 +24,10 @@ DRUG_RAW = {
     "id": "CHEMBL939",
     "name": "ERLOTINIB",
     "drugType": "Small molecule",
-    "mechanismOfAction": "EGFR inhibitor",
+    "mechanismsOfAction": {"rows": [{"mechanismOfAction": "EGFR inhibitor"}]},
     "synonyms": ["Tarceva"],
     "tradeNames": ["Tarceva"],
-    "maximumClinicalTrialPhase": 4.0,
+    "maximumClinicalStage": "APPROVAL",
 }
 
 ASSOCIATION_ROW = {
@@ -97,7 +97,7 @@ def drug_indications_response() -> dict:
                     "count": 1,
                     "rows": [
                         {
-                            "maxPhaseForIndication": 4.0,
+                            "maxClinicalStage": "APPROVAL",
                             "disease": {"id": "EFO_0003060", "name": "lung carcinoma"},
                         }
                     ],
