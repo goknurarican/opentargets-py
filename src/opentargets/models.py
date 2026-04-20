@@ -74,9 +74,7 @@ class Drug(BaseModel):
     mechanism_of_action: str = ""
     synonyms: list[str] = Field(default_factory=list)
     trade_names: list[str] = Field(default_factory=list, alias="tradeNames")
-    max_clinical_trial_phase: Optional[str] = Field(
-        None, alias="maximumClinicalStage"
-    )
+    max_clinical_trial_phase: Optional[str] = Field(None, alias="maximumClinicalStage")
 
 
 class DatasourceScore(BaseModel):
@@ -150,6 +148,4 @@ class DrugIndication(BaseModel):
 
     disease_id: str = ""
     disease_name: str = ""
-    max_phase_for_indication: Optional[str] = Field(
-        None, alias="maxClinicalStage"
-    )
+    max_phase_for_indication: Optional[str] = Field(None, alias="maxClinicalStage")

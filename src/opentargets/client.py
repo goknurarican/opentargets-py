@@ -6,7 +6,6 @@ from typing import TYPE_CHECKING, Any, cast
 
 from ._cache import TTLCache
 from ._graphql import GraphQLClient
-from ._queries.association import ASSOCIATION_QUERY
 from ._queries.disease import DISEASE_QUERY, DISEASE_TARGETS_QUERY
 from ._queries.drug import DRUG_INDICATIONS_QUERY, DRUG_QUERY
 from ._queries.search import SEARCH_QUERY
@@ -157,7 +156,9 @@ class OpenTargetsClient:
         """
         ensembl_id = self._resolve_target(target_id)
         data = self._gql.execute(TARGET_DRUGS_QUERY, {"ensemblId": ensembl_id})
-        rows = (data.get("target") or {}).get("drugAndClinicalCandidates", {}).get("rows") or []
+        rows = (data.get("target") or {}).get("drugAndClinicalCandidates", {}).get(
+            "rows"
+        ) or []
         return [_parse_drug(r["drug"]) for r in rows if "drug" in r]
 
     # ------------------------------------------------------------------
