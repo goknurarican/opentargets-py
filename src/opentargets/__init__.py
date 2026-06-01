@@ -1,5 +1,6 @@
 """opentargets-py — Modern Python client for the Open Targets Platform GraphQL API."""
 
+from ._cache import CacheBackend, DiskCache
 from .client import OpenTargetsClient
 from .exceptions import (
     APIError,
@@ -21,6 +22,9 @@ from .models import (
 __version__ = "0.1.0"
 __all__ = [
     "OpenTargetsClient",
+    # Cache
+    "CacheBackend",
+    "DiskCache",
     # Exceptions
     "OpenTargetsError",
     "APIError",
