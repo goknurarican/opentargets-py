@@ -1,5 +1,6 @@
 """opentargets-py — Modern Python client for the Open Targets Platform GraphQL API."""
 
+from ._async_client import AsyncOpenTargetsClient
 from .client import OpenTargetsClient
 from .exceptions import (
     APIError,
@@ -20,6 +21,7 @@ from .models import (
 
 __version__ = "0.1.0"
 __all__ = [
+    "AsyncOpenTargetsClient",
     "OpenTargetsClient",
     # Exceptions
     "OpenTargetsError",

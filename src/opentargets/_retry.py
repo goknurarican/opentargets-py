@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
+import asyncio
 import time
-from collections.abc import Callable
-from typing import TypeVar
+from collections.abc import Callable, Coroutine
+from typing import Any, TypeVar
 
 from .exceptions import RateLimitError
 
@@ -49,6 +50,44 @@ def with_retry(fn: Callable[[], _T]) -> _T:
                 raise
             last_exc = exc
             _sleep(_backoff(attempt))
+
+    assert last_exc is not None
+    raise last_exc
+
+
+async def with_retry_async(fn: Callable[[], Coroutine[Any, Any, _T]]) -> _T:
+    """Execute async *fn* with exponential backoff on retryable HTTP errors.
+
+    Retries on :class:`~opentargets.exceptions.RateLimitError` and
+    :class:`~opentargets.exceptions.APIError` whose ``status_code`` is in
+    ``{429, 500, 502, 503, 504}``.
+
+    Args:
+        fn: Zero-argument async callable that performs the HTTP request.
+
+    Returns:
+        The return value of *fn* on success.
+
+    Raises:
+        The last exception raised by *fn* after all retries are exhausted.
+    """
+    from .exceptions import APIError
+
+    last_exc: Exception | None = None
+    for attempt in range(_MAX_RETRIES + 1):
+        try:
+            return await fn()
+        except RateLimitError as exc:
+            last_exc = exc
+            delay = (
+                exc.retry_after if exc.retry_after is not None else _backoff(attempt)
+            )
+            await asyncio.sleep(delay)
+        except APIError as exc:
+            if exc.status_code not in _RETRYABLE_STATUS:
+                raise
+            last_exc = exc
+            await asyncio.sleep(_backoff(attempt))
 
     assert last_exc is not None
     raise last_exc

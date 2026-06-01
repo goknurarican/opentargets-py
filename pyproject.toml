@@ -39,6 +39,7 @@ dependencies = [
 pandas = ["pandas>=1.5"]
 dev = [
     "pytest>=7.0",
+    "pytest-asyncio>=0.21",
     "pytest-cov",
     "respx>=0.20",
     "mypy>=1.0",
@@ -67,6 +68,7 @@ warn_unused_configs = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+asyncio_mode = "auto"
 markers = [
     "integration: marks tests that hit the real API",
 ]
