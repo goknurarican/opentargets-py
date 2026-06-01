@@ -1,0 +1,90 @@
+# opentargets-py
+
+> Unofficial Python client for the Open Targets Platform GraphQL API
+> (https://platform.opentargets.org). Provides sync + async access to
+> drug targets, diseases, drugs, and their associations, with optional
+> CLI and MCP server frontends for agentic use.
+
+## Quickstart
+
+**Sync (Python)**
+
+```python
+from opentargets import OpenTargetsClient
+
+client = OpenTargetsClient()
+target = client.get_target("EGFR")          # accepts symbol or Ensembl ID
+print(target.approved_name)                 # epidermal growth factor receptor
+
+disease = client.get_disease("EFO_0000311")
+assocs = client.get_target_associations("EGFR", limit=10)
+drug = client.get_drug("CHEMBL941")
+```
+
+**Async (Python)**
+
+```python
+from opentargets import AsyncOpenTargetsClient
+import asyncio
+
+async def main():
+    async with AsyncOpenTargetsClient() as client:
+        target = await client.get_target("EGFR")
+        drugs = await client.get_target_drugs("EGFR")
+
+asyncio.run(main())
+```
+
+**CLI**
+
+```bash
+opentargets target EGFR --json
+opentargets disease EFO_0000311 --json
+opentargets search "lung cancer" --entity disease --limit 5 --json
+```
+
+**MCP (Claude Desktop)**
+
+```json
+{
+  "mcpServers": {
+    "opentargets": {
+      "command": "opentargets-mcp"
+    }
+  }
+}
+```
+
+## Endpoints
+
+All methods are available on both `OpenTargetsClient` (sync) and `AsyncOpenTargetsClient` (async, same signatures with `await`).
+
+- `get_target(target_id)` — fetch a single target by Ensembl ID or HGNC gene symbol
+- `get_targets(target_ids)` — batch-fetch multiple targets in one API call
+- `get_target_associations(target_id, limit, as_dataframe)` — diseases associated with a target, with overall and per-datasource scores
+- `get_target_drugs(target_id)` — drugs and clinical candidates interacting with a target
+- `get_target_tractability(target_id)` — small-molecule and antibody tractability assessments
+- `get_target_safety(target_id)` — safety liability events and biosample effects
+- `get_target_expression(target_id)` — baseline tissue-level RNA and protein expression
+- `get_target_constraint(target_id)` — gnomAD genetic constraint metrics (pLI, LOEUF, Z-scores)
+- `get_disease(disease_id)` — fetch a single disease by EFO identifier
+- `get_disease_targets(disease_id, limit, as_dataframe)` — targets associated with a disease
+- `get_drug(drug_id)` — fetch a single drug by ChEMBL ID
+- `get_drug_indications(drug_id)` — approved and clinical-stage disease indications for a drug
+- `get_drug_chembl_ids(drug_id)` — all ChEMBL IDs linked to a drug via cross-references
+- `search(query_string, entity_type, limit)` — free-text search across targets, diseases, and drugs
+- `get_associations(target_id, disease_id)` — fetch the association score between one target and one disease
+
+## For AI agents
+
+- MCP server: `opentargets-mcp` (configure under `mcpServers` in Claude Desktop, see Quickstart above)
+- CLI with `--json`: every subcommand emits newline-delimited JSON, suitable for piping to `jq`
+- All responses are Pydantic v2 models — call `.model_dump()` for plain dicts or `.model_dump_json()` for JSON strings
+- Symbol resolution is built-in: pass `"EGFR"` anywhere an Ensembl ID is expected
+- List methods accept `as_dataframe=True` to return a `pandas.DataFrame` directly
+
+## Links
+
+- Repo: https://github.com/goknurarican/opentargets-py
+- Open Targets docs: https://platform-docs.opentargets.org/
+- PyPI: https://pypi.org/project/opentargets-py/

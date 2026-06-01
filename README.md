@@ -49,6 +49,42 @@ disease = client.get_disease("EFO_0003060")
 results = client.search("lung cancer", entity_type="disease", limit=5)
 ```
 
+<!-- BEGIN: For AI agents section (agentdocs) -->
+## For AI agents
+
+This package is designed to be usable by both humans and LLM-based agents. Every public method returns typed Pydantic v2 models (`.model_dump()` / `.model_dump_json()`), a CLI emits `--json` on every subcommand for easy piping, and an MCP server exposes the full API surface to any MCP-compatible host such as Claude Desktop.
+
+**MCP setup (Claude Desktop)**
+
+Add the following to your `claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "opentargets": {
+      "command": "opentargets-mcp"
+    }
+  }
+}
+```
+
+**CLI JSON example**
+
+```bash
+# Fetch EGFR target data as JSON and extract the approved name with jq
+opentargets target EGFR --json | jq '.approved_name'
+
+# Search for diseases and stream results
+opentargets search "lung cancer" --entity disease --limit 5 --json
+```
+
+**Further reading**
+
+- [`llms.txt`](llms.txt) — skimmable one-page overview for LLMs (method list, examples, links)
+- Docstrings on every public method include `Args`, `Returns`, and `Example` blocks
+
+<!-- END: For AI agents section (agentdocs) -->
+
 ## Features
 
 - **Type-safe** — full Pydantic v2 models, `py.typed` marker, `mypy --strict` compliant
