@@ -37,6 +37,7 @@ dependencies = [
 
 [project.optional-dependencies]
 pandas = ["pandas>=1.5"]
+cli = ["typer>=0.9", "rich>=13"]
 dev = [
     "pytest>=7.0",
     "pytest-asyncio>=0.21",
@@ -44,7 +45,12 @@ dev = [
     "respx>=0.20",
     "mypy>=1.0",
     "ruff>=0.1",
+    "typer>=0.9",
+    "rich>=13",
 ]
+
+[project.scripts]
+opentargets = "opentargets.cli:app"
 
 [project.urls]
 Homepage = "https://github.com/goknurarican/opentargets-py"
@@ -60,8 +66,11 @@ line-length = 88
 select = ["E", "F", "W", "I", "UP", "B", "SIM"]
 ignore = ["UP045"]  # Optional[X] needed for Python 3.9 Pydantic compat
 
+[tool.ruff.lint.per-file-ignores]
+"src/opentargets/cli.py" = ["B008"]  # typer requires function calls in defaults
+
 [tool.mypy]
-python_version = "3.9"
+python_version = "3.10"
 strict = true
 warn_return_any = true
 warn_unused_configs = true
@@ -76,6 +85,11 @@ markers = [
 [[tool.mypy.overrides]]
 module = "pandas"
 ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = ["typer", "typer.*", "rich", "rich.*", "click", "click.*"]
+ignore_missing_imports = true
+ignore_errors = true
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/opentargets"]
