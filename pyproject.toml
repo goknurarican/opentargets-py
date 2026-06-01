@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "opentargets-py"
-version = "0.1.0"
+version = "0.2.0"
 description = "Unofficial community-maintained Python client for the Open Targets Platform GraphQL API"
 readme = "README.md"
 license = "Apache-2.0"
