@@ -1,5 +1,6 @@
 """opentargets-py — Modern Python client for the Open Targets Platform GraphQL API."""
 
+from ._async_client import AsyncOpenTargetsClient
 from ._cache import CacheBackend, DiskCache
 from ._retry import DEFAULT_RETRY_CONFIG, RetryConfig
 from .client import OpenTargetsClient
@@ -31,6 +32,7 @@ from .models import (
 
 __version__ = "0.1.0"
 __all__ = [
+    "AsyncOpenTargetsClient",
     "OpenTargetsClient",
     # Retry config
     "RetryConfig",

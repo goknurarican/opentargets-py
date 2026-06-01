@@ -2,10 +2,11 @@
 
 from __future__ import annotations
 
+import asyncio
 import time
-from collections.abc import Callable
+from collections.abc import Callable, Coroutine
 from dataclasses import dataclass, field
-from typing import TypeVar
+from typing import Any, TypeVar
 
 from .exceptions import RateLimitError
 
@@ -85,6 +86,45 @@ def with_retry(
                 raise
             last_exc = exc
             _sleep(_backoff(attempt, config))
+
+    assert last_exc is not None
+    raise last_exc
+
+
+async def with_retry_async(
+    fn: Callable[[], Coroutine[Any, Any, _T]],
+    config: RetryConfig = DEFAULT_RETRY_CONFIG,
+) -> _T:
+    """Async version of :func:`with_retry`.
+
+    Args:
+        fn: Zero-argument async callable that performs the HTTP request.
+        config: Retry configuration; defaults to :data:`DEFAULT_RETRY_CONFIG`.
+
+    Returns:
+        The return value of *fn* on success.
+
+    Raises:
+        The last exception raised by *fn* after all retries are exhausted.
+    """
+    from .exceptions import APIError
+
+    last_exc: Exception | None = None
+    for attempt in range(config.max_retries + 1):
+        try:
+            return await fn()
+        except RateLimitError as exc:
+            last_exc = exc
+            if config.respect_retry_after and exc.retry_after is not None:
+                delay = exc.retry_after
+            else:
+                delay = _backoff(attempt, config)
+            await asyncio.sleep(delay)
+        except APIError as exc:
+            if exc.status_code not in config.retryable_statuses:
+                raise
+            last_exc = exc
+            await asyncio.sleep(_backoff(attempt, config))
 
     assert last_exc is not None
     raise last_exc
