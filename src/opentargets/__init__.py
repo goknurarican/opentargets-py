@@ -1,5 +1,6 @@
 """opentargets-py — Modern Python client for the Open Targets Platform GraphQL API."""
 
+from ._cache import CacheBackend, DiskCache
 from ._retry import DEFAULT_RETRY_CONFIG, RetryConfig
 from .client import OpenTargetsClient
 from .exceptions import (
@@ -34,6 +35,9 @@ __all__ = [
     # Retry config
     "RetryConfig",
     "DEFAULT_RETRY_CONFIG",
+    # Cache
+    "CacheBackend",
+    "DiskCache",
     # Exceptions
     "OpenTargetsError",
     "APIError",

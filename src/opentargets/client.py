@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Optional, cast
 
-from ._cache import TTLCache
+from ._cache import CacheBackend, TTLCache, _NoCache
 from ._graphql import GraphQLClient
 from ._queries.disease import DISEASE_QUERY, DISEASE_TARGETS_QUERY
 from ._queries.drug import DRUG_CHEMBL_IDS_QUERY, DRUG_INDICATIONS_QUERY, DRUG_QUERY
@@ -19,7 +19,7 @@ from ._queries.target import (
     TARGET_TRACTABILITY_QUERY,
     TARGETS_BATCH_QUERY,
 )
-from ._retry import RetryConfig
+from ._retry import DEFAULT_RETRY_CONFIG, RetryConfig
 from .exceptions import NotFoundError
 from .models import (
     Association,
@@ -68,12 +68,10 @@ class OpenTargetsClient:
         self,
         base_url: str = _DEFAULT_URL,
         timeout: float = 30.0,
-        cache: bool = True,
+        cache: bool | CacheBackend = True,
         cache_ttl: float = 300.0,
         retry_config: Optional[RetryConfig] = None,
     ) -> None:
-        from ._retry import DEFAULT_RETRY_CONFIG
-
         self._gql = GraphQLClient(
             base_url=base_url,
             timeout=timeout,
@@ -81,8 +79,12 @@ class OpenTargetsClient:
             if retry_config is not None
             else DEFAULT_RETRY_CONFIG,
         )
-        _sym: TTLCache[str, str] = TTLCache(ttl=cache_ttl) if cache else _NoCache()
-        _res: TTLCache[str, Any] = TTLCache(ttl=cache_ttl) if cache else _NoCache()
+        if isinstance(cache, bool):
+            _sym: CacheBackend = TTLCache(ttl=cache_ttl) if cache else _NoCache()
+            _res: CacheBackend = TTLCache(ttl=cache_ttl) if cache else _NoCache()
+        else:
+            _sym = cache
+            _res = cache
         self._symbol_cache = _sym
         self._result_cache = _res
 
@@ -478,7 +480,7 @@ class OpenTargetsClient:
 
         cached = self._symbol_cache.get(target_id.upper())
         if cached is not None:
-            return cached
+            return cast(str, cached)
 
         results = self.search(target_id, entity_type="target", limit=1)
         if not results:
@@ -678,11 +680,3 @@ def _to_dataframe(associations: list[Association]) -> pd.DataFrame:
     return pd.DataFrame([a.model_dump() for a in associations])
 
 
-class _NoCache(TTLCache[Any, Any]):
-    """Drop-in TTLCache replacement that never stores anything."""
-
-    def get(self, key: Any) -> None:
-        return None
-
-    def set(self, key: Any, value: Any) -> None:
-        pass
