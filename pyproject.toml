@@ -37,6 +37,7 @@ dependencies = [
 
 [project.optional-dependencies]
 pandas = ["pandas>=1.5"]
+mcp = ["fastmcp>=2.0"]
 dev = [
     "pytest>=7.0",
     "pytest-asyncio>=0.21",
@@ -45,6 +46,9 @@ dev = [
     "mypy>=1.0",
     "ruff>=0.1",
 ]
+
+[project.scripts]
+opentargets-mcp = "opentargets.mcp_server:main"
 
 [project.urls]
 Homepage = "https://github.com/goknurarican/opentargets-py"
@@ -76,6 +80,53 @@ markers = [
 [[tool.mypy.overrides]]
 module = "pandas"
 ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "fastmcp"
+ignore_missing_imports = true
+follow_imports = "skip"
+
+[[tool.mypy.overrides]]
+module = "fastmcp.*"
+ignore_missing_imports = true
+follow_imports = "skip"
+
+[[tool.mypy.overrides]]
+module = "mcp"
+ignore_missing_imports = true
+follow_imports = "skip"
+
+[[tool.mypy.overrides]]
+module = "mcp.*"
+ignore_missing_imports = true
+follow_imports = "skip"
+
+[[tool.mypy.overrides]]
+module = "click"
+ignore_missing_imports = true
+follow_imports = "skip"
+
+[[tool.mypy.overrides]]
+module = "click.*"
+ignore_missing_imports = true
+follow_imports = "skip"
+
+[[tool.mypy.overrides]]
+module = "cyclopts"
+ignore_missing_imports = true
+follow_imports = "skip"
+
+[[tool.mypy.overrides]]
+module = "cyclopts.*"
+ignore_missing_imports = true
+follow_imports = "skip"
+
+# mcp_server.py uses @mcp.tool decorators from fastmcp (skipped by mypy).
+# With follow_imports=skip, fastmcp types resolve to Any, which triggers
+# untyped-decorator but cannot be suppressed by type: ignore in strict mode.
+[[tool.mypy.overrides]]
+module = "opentargets.mcp_server"
+disable_error_code = ["untyped-decorator"]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/opentargets"]
