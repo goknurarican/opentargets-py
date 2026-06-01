@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.2.1] - 2026-06-02
+
+### Fixed
+- `opentargets.__version__` was hard-coded to `"0.1.0"` and drifted from `pyproject.toml`. It now reads from package metadata at runtime, so it stays in sync with whatever was installed.
+
 ## [0.2.0] - 2026-06-02
 
 ### Added

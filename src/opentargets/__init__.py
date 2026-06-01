@@ -1,5 +1,8 @@
 """opentargets-py — Modern Python client for the Open Targets Platform GraphQL API."""
 
+from importlib.metadata import PackageNotFoundError
+from importlib.metadata import version as _pkg_version
+
 from ._async_client import AsyncOpenTargetsClient
 from ._cache import CacheBackend, DiskCache
 from ._retry import DEFAULT_RETRY_CONFIG, RetryConfig
@@ -30,7 +33,11 @@ from .models import (
     Tractability,
 )
 
-__version__ = "0.1.0"
+try:
+    __version__ = _pkg_version("opentargets-py")
+except PackageNotFoundError:  # editable install without installed metadata
+    __version__ = "0.0.0+unknown"
+
 __all__ = [
     "AsyncOpenTargetsClient",
     "OpenTargetsClient",
