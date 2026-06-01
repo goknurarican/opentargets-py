@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, cast
+from typing import TYPE_CHECKING, Any, Optional, cast
 
 from ._cache import TTLCache
 from ._graphql import GraphQLClient
@@ -15,6 +15,7 @@ from ._queries.target import (
     TARGET_QUERY,
     TARGETS_BATCH_QUERY,
 )
+from ._retry import RetryConfig
 from .exceptions import NotFoundError
 from .models import (
     Association,
@@ -56,8 +57,17 @@ class OpenTargetsClient:
         timeout: float = 30.0,
         cache: bool = True,
         cache_ttl: float = 300.0,
+        retry_config: Optional[RetryConfig] = None,
     ) -> None:
-        self._gql = GraphQLClient(base_url=base_url, timeout=timeout)
+        from ._retry import DEFAULT_RETRY_CONFIG
+
+        self._gql = GraphQLClient(
+            base_url=base_url,
+            timeout=timeout,
+            retry_config=retry_config
+            if retry_config is not None
+            else DEFAULT_RETRY_CONFIG,
+        )
         _sym: TTLCache[str, str] = TTLCache(ttl=cache_ttl) if cache else _NoCache()
         _res: TTLCache[str, Any] = TTLCache(ttl=cache_ttl) if cache else _NoCache()
         self._symbol_cache = _sym

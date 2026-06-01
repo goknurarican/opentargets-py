@@ -6,7 +6,7 @@ from typing import Any
 
 import httpx
 
-from ._retry import with_retry
+from ._retry import DEFAULT_RETRY_CONFIG, RetryConfig, with_retry
 from .exceptions import APIError, QueryError, RateLimitError
 
 _DEFAULT_URL = "https://api.platform.opentargets.org/api/v4/graphql"
@@ -27,11 +27,13 @@ class GraphQLClient:
         base_url: str = _DEFAULT_URL,
         timeout: float = _DEFAULT_TIMEOUT,
         http_client: httpx.Client | None = None,
+        retry_config: RetryConfig = DEFAULT_RETRY_CONFIG,
     ) -> None:
         self._base_url = base_url
         self._timeout = timeout
         self._client = http_client or httpx.Client(timeout=timeout)
         self._owns_client = http_client is None
+        self._retry_config = retry_config
 
     def execute(
         self,
@@ -64,7 +66,7 @@ class GraphQLClient:
                 raise QueryError(body["errors"])
             return body.get("data") or {}
 
-        return with_retry(_do_request)
+        return with_retry(_do_request, self._retry_config)
 
     def paginate(
         self,
