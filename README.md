@@ -71,7 +71,7 @@ Every subcommand supports `--json`, so the CLI is usable from shell scripts, age
 ### MCP server (Claude Desktop, Cursor, etc.)
 
 ```bash
-pip install opentargets-py[mcp]
+pip install opentargets-py[mcp]   # requires Python 3.10+
 ```
 
 Then add to your `claude_desktop_config.json` (macOS path:

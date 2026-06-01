@@ -24,8 +24,13 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Install dependencies
+        # fastmcp (in [mcp]/[all]) requires Python >=3.10
         run: |
-          pip install -e ".[dev,all]"
+          if [ "${{ matrix.python-version }}" = "3.9" ]; then
+            pip install -e ".[dev,pandas,cli]"
+          else
+            pip install -e ".[dev,all]"
+          fi
 
       - name: Lint (ruff)
         run: ruff check src tests

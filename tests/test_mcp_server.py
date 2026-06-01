@@ -13,6 +13,8 @@ from unittest.mock import MagicMock
 
 import pytest
 
+pytest.importorskip("fastmcp", reason="fastmcp requires Python >=3.10")
+
 from opentargets import mcp_server as _mod
 from opentargets.exceptions import NotFoundError
 from opentargets.models import (

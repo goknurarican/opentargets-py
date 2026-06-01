@@ -54,7 +54,7 @@ dev = [
     "ruff>=0.1",
     "typer>=0.9",
     "rich>=13",
-    "fastmcp>=2.0",
+    # fastmcp requires Python >=3.10; install via [mcp] or [all] on 3.10+
 ]
 
 [project.scripts]
