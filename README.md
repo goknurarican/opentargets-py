@@ -79,6 +79,36 @@ See [`docs/api-reference.md`](docs/api-reference.md).
 4. Run linting: `ruff check src tests && ruff format src tests`
 5. Open a pull request.
 
+## MCP server
+
+`opentargets-py` ships an [MCP](https://modelcontextprotocol.io) server so AI
+assistants such as Claude Desktop and Cursor can query Open Targets directly via
+natural language.
+
+Install with the extra:
+
+```bash
+pip install opentargets-py[mcp]
+```
+
+Then add to your Claude Desktop config
+(`~/Library/Application Support/Claude/claude_desktop_config.json`):
+
+```json
+{
+  "mcpServers": {
+    "opentargets": {
+      "command": "opentargets-mcp"
+    }
+  }
+}
+```
+
+Exposed tools: `get_target_info`, `find_target_associations`, `get_target_drugs`,
+`get_target_tractability`, `get_target_safety`, `get_target_expression`,
+`get_target_constraint`, `get_disease_info`, `find_disease_targets`,
+`get_drug_info`, `get_drug_indications`, `search_open_targets`.
+
 ## License
 
 Apache 2.0 — see [LICENSE](LICENSE).

@@ -38,6 +38,7 @@ dependencies = [
 [project.optional-dependencies]
 pandas = ["pandas>=1.5"]
 cli = ["typer>=0.9", "rich>=13"]
+mcp = ["fastmcp>=2.0"]
 dev = [
     "pytest>=7.0",
     "pytest-asyncio>=0.21",
@@ -51,6 +52,7 @@ dev = [
 
 [project.scripts]
 opentargets = "opentargets.cli:app"
+opentargets-mcp = "opentargets.mcp_server:main"
 
 [project.urls]
 Homepage = "https://github.com/goknurarican/opentargets-py"
@@ -70,7 +72,7 @@ ignore = ["UP045"]  # Optional[X] needed for Python 3.9 Pydantic compat
 "src/opentargets/cli.py" = ["B008"]  # typer requires function calls in defaults
 
 [tool.mypy]
-python_version = "3.10"
+python_version = "3.9"
 strict = true
 warn_return_any = true
 warn_unused_configs = true
@@ -87,9 +89,26 @@ module = "pandas"
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
-module = ["typer", "typer.*", "rich", "rich.*", "click", "click.*"]
+module = ["typer", "typer.*", "rich", "rich.*"]
 ignore_missing_imports = true
-ignore_errors = true
+follow_imports = "skip"
+
+[[tool.mypy.overrides]]
+module = ["click", "click.*", "cyclopts", "cyclopts.*"]
+ignore_missing_imports = true
+follow_imports = "skip"
+
+[[tool.mypy.overrides]]
+module = ["fastmcp", "fastmcp.*", "mcp", "mcp.*"]
+ignore_missing_imports = true
+follow_imports = "skip"
+
+# mcp_server.py uses @mcp.tool decorators that resolve to Any once fastmcp
+# imports are skipped — strict mode flags this and the marker can't be
+# suppressed inline, so silence it at module level.
+[[tool.mypy.overrides]]
+module = "opentargets.mcp_server"
+disable_error_code = ["untyped-decorator"]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/opentargets"]
