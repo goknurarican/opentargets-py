@@ -7,12 +7,16 @@ from typing import TYPE_CHECKING, Any, Optional, cast
 from ._cache import TTLCache
 from ._graphql import GraphQLClient
 from ._queries.disease import DISEASE_QUERY, DISEASE_TARGETS_QUERY
-from ._queries.drug import DRUG_INDICATIONS_QUERY, DRUG_QUERY
+from ._queries.drug import DRUG_CHEMBL_IDS_QUERY, DRUG_INDICATIONS_QUERY, DRUG_QUERY
 from ._queries.search import SEARCH_QUERY
 from ._queries.target import (
     TARGET_ASSOCIATIONS_QUERY,
+    TARGET_CONSTRAINT_QUERY,
     TARGET_DRUGS_QUERY,
+    TARGET_EXPRESSION_QUERY,
     TARGET_QUERY,
+    TARGET_SAFETY_QUERY,
+    TARGET_TRACTABILITY_QUERY,
     TARGETS_BATCH_QUERY,
 )
 from ._retry import RetryConfig
@@ -23,8 +27,17 @@ from .models import (
     Disease,
     Drug,
     DrugIndication,
+    GeneticConstraint,
+    ProteinExpression,
+    RnaExpression,
+    SafetyBiosample,
+    SafetyEffect,
+    SafetyLiability,
     SearchResult,
     Target,
+    TissueExpression,
+    TissueInfo,
+    Tractability,
 )
 
 if TYPE_CHECKING:
@@ -171,6 +184,72 @@ class OpenTargetsClient:
         ) or []
         return [_parse_drug(r["drug"]) for r in rows if "drug" in r]
 
+    def get_target_tractability(self, target_id: str) -> list[Tractability]:
+        """Fetch tractability assessments for a target.
+
+        Args:
+            target_id: Ensembl ID or gene symbol.
+
+        Returns:
+            List of :class:`~opentargets.models.Tractability` objects, one per
+            modality/label combination.
+        """
+        ensembl_id = self._resolve_target(target_id)
+        data = self._gql.execute(TARGET_TRACTABILITY_QUERY, {"ensemblId": ensembl_id})
+        rows: list[dict[str, Any]] = (data.get("target") or {}).get(
+            "tractability"
+        ) or []
+        return [Tractability.model_validate(r) for r in rows]
+
+    def get_target_safety(self, target_id: str) -> list[SafetyLiability]:
+        """Fetch safety liability information for a target.
+
+        Args:
+            target_id: Ensembl ID or gene symbol.
+
+        Returns:
+            List of :class:`~opentargets.models.SafetyLiability` objects.
+        """
+        ensembl_id = self._resolve_target(target_id)
+        data = self._gql.execute(TARGET_SAFETY_QUERY, {"ensemblId": ensembl_id})
+        rows: list[dict[str, Any]] = (data.get("target") or {}).get(
+            "safetyLiabilities"
+        ) or []
+        return [_parse_safety_liability(r) for r in rows]
+
+    def get_target_expression(self, target_id: str) -> list[TissueExpression]:
+        """Fetch baseline tissue expression data for a target.
+
+        Args:
+            target_id: Ensembl ID or gene symbol.
+
+        Returns:
+            List of :class:`~opentargets.models.TissueExpression` objects.
+        """
+        ensembl_id = self._resolve_target(target_id)
+        data = self._gql.execute(TARGET_EXPRESSION_QUERY, {"ensemblId": ensembl_id})
+        rows: list[dict[str, Any]] = (data.get("target") or {}).get(
+            "expressions"
+        ) or []
+        return [_parse_tissue_expression(r) for r in rows]
+
+    def get_target_constraint(self, target_id: str) -> list[GeneticConstraint]:
+        """Fetch gnomAD genetic constraint metrics for a target.
+
+        Args:
+            target_id: Ensembl ID or gene symbol.
+
+        Returns:
+            List of :class:`~opentargets.models.GeneticConstraint` objects —
+            typically one entry each for ``syn``, ``mis``, and ``lof``.
+        """
+        ensembl_id = self._resolve_target(target_id)
+        data = self._gql.execute(TARGET_CONSTRAINT_QUERY, {"ensemblId": ensembl_id})
+        rows: list[dict[str, Any]] = (data.get("target") or {}).get(
+            "geneticConstraint"
+        ) or []
+        return [GeneticConstraint.model_validate(r) for r in rows]
+
     # ------------------------------------------------------------------
     # Disease queries
     # ------------------------------------------------------------------
@@ -278,6 +357,30 @@ class OpenTargetsClient:
         data = self._gql.execute(DRUG_INDICATIONS_QUERY, {"chemblId": drug_id})
         rows = (data.get("drug") or {}).get("indications", {}).get("rows") or []
         return [_parse_drug_indication(r) for r in rows]
+
+    def get_drug_chembl_ids(self, drug_id: str) -> list[str]:
+        """Fetch all ChEMBL-related IDs from a drug's cross-references.
+
+        The Open Targets ``Drug`` type stores external references in
+        ``crossReferences`` (source + ids).  This method returns only those
+        ``ids`` belonging to sources that look like a ChEMBL reference — i.e.
+        any cross-reference whose ``ids`` list contains strings starting with
+        ``CHEMBL``, plus the primary drug ID itself.
+
+        Args:
+            drug_id: ChEMBL ID (e.g. ``CHEMBL521``).
+
+        Returns:
+            Deduplicated list of ChEMBL identifier strings.
+
+        Raises:
+            NotFoundError: If no drug matches *drug_id*.
+        """
+        data = self._gql.execute(DRUG_CHEMBL_IDS_QUERY, {"chemblId": drug_id})
+        raw = data.get("drug")
+        if not raw:
+            raise NotFoundError("drug", drug_id)
+        return _extract_chembl_ids(raw)
 
     # ------------------------------------------------------------------
     # Search
@@ -501,6 +604,66 @@ def _parse_drug_indication(row: dict[str, Any]) -> DrugIndication:
             "maxClinicalStage": row.get("maxClinicalStage"),
         }
     )
+
+
+def _parse_safety_liability(raw: dict[str, Any]) -> SafetyLiability:
+    biosamples = [
+        SafetyBiosample.model_validate(b) for b in (raw.get("biosamples") or [])
+    ]
+    effects = [SafetyEffect.model_validate(e) for e in (raw.get("effects") or [])]
+    return SafetyLiability.model_validate(
+        {
+            "event": raw.get("event"),
+            "datasource": raw.get("datasource", ""),
+            "biosamples": biosamples,
+            "effects": effects,
+            "literature": raw.get("literature"),
+            "url": raw.get("url"),
+            "eventId": raw.get("eventId"),
+        }
+    )
+
+
+def _parse_tissue_expression(raw: dict[str, Any]) -> TissueExpression:
+    tissue_raw = raw.get("tissue") or {}
+    rna_raw = raw.get("rna") or {}
+    protein_raw = raw.get("protein") or {}
+    return TissueExpression(
+        tissue=TissueInfo(
+            id=tissue_raw.get("id", ""),
+            label=tissue_raw.get("label", ""),
+        ),
+        rna=RnaExpression(
+            value=rna_raw.get("value", 0.0),
+            level=rna_raw.get("level", 0),
+            zscore=rna_raw.get("zscore", 0),
+            unit=rna_raw.get("unit", ""),
+        ),
+        protein=ProteinExpression(
+            level=protein_raw.get("level", -1),
+            reliability=protein_raw.get("reliability", False),
+        ),
+    )
+
+
+def _extract_chembl_ids(raw: dict[str, Any]) -> list[str]:
+    """Return deduplicated ChEMBL IDs from a drug's crossReferences."""
+    seen: set[str] = set()
+    result: list[str] = []
+    primary_id = raw.get("id", "")
+    if primary_id:
+        seen.add(primary_id)
+        result.append(primary_id)
+    for ref in raw.get("crossReferences") or []:
+        for ref_id in ref.get("ids") or []:
+            if (
+                isinstance(ref_id, str)
+                and ref_id.upper().startswith("CHEMBL")
+                and ref_id not in seen
+            ):
+                seen.add(ref_id)
+                result.append(ref_id)
+    return result
 
 
 def _to_dataframe(associations: list[Association]) -> pd.DataFrame:

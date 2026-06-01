@@ -36,3 +36,16 @@ query DrugIndications($chemblId: String!) {
   }
 }
 """
+
+DRUG_CHEMBL_IDS_QUERY = """
+query DrugChemblIds($chemblId: String!) {
+  drug(chemblId: $chemblId) {
+    id
+    name
+    crossReferences {
+      source
+      ids
+    }
+  }
+}
+"""
