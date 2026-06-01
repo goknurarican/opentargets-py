@@ -96,6 +96,7 @@ _DRUG_CROSS_REFS = {
     ],
 }
 
+
 # Responses that include ensembl target wrapper
 def _target_tractability_resp() -> dict:
     return {

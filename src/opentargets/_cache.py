@@ -103,9 +103,7 @@ class DiskCache:
           expires_at REAL NOT NULL
         );
     """
-    _CREATE_INDEX = (
-        "CREATE INDEX IF NOT EXISTS idx_expires ON cache(expires_at);"
-    )
+    _CREATE_INDEX = "CREATE INDEX IF NOT EXISTS idx_expires ON cache(expires_at);"
 
     def __init__(
         self,
@@ -137,9 +135,7 @@ class DiskCache:
         return conn
 
     def _prune_expired(self, conn: sqlite3.Connection) -> None:
-        conn.execute(
-            "DELETE FROM cache WHERE expires_at <= ?;", (time.monotonic(),)
-        )
+        conn.execute("DELETE FROM cache WHERE expires_at <= ?;", (time.monotonic(),))
 
     def _prune_maxsize(self, conn: sqlite3.Connection) -> None:
         if self._maxsize is None:
@@ -182,8 +178,7 @@ class DiskCache:
         with self._lock:
             conn = self._connect()
             sql = (
-                "INSERT OR REPLACE INTO cache(key, value, expires_at)"
-                " VALUES (?, ?, ?);"
+                "INSERT OR REPLACE INTO cache(key, value, expires_at) VALUES (?, ?, ?);"
             )
             conn.execute(sql, (key, blob, expires_at))
             self._prune_maxsize(conn)

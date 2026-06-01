@@ -51,9 +51,7 @@ def _json_out(data: object) -> None:
 
 @app.command()
 def target(
-    target_id: str = typer.Argument(
-        ..., help="Ensembl ID or gene symbol (e.g. EGFR)"
-    ),
+    target_id: str = typer.Argument(..., help="Ensembl ID or gene symbol (e.g. EGFR)"),
     associations: bool = typer.Option(
         False, "--associations", help="Include top associations"
     ),
@@ -61,9 +59,7 @@ def target(
     tractability: bool = typer.Option(
         False, "--tractability", help="Include tractability data"
     ),
-    safety: bool = typer.Option(
-        False, "--safety", help="Include safety liabilities"
-    ),
+    safety: bool = typer.Option(False, "--safety", help="Include safety liabilities"),
     expression: bool = typer.Option(
         False, "--expression", help="Include tissue expression"
     ),
@@ -82,9 +78,7 @@ def target(
 
         if associations:
             assocs = client.get_target_associations(target_id, limit=limit)
-            result["associations"] = [
-                a.model_dump(mode="json") for a in assocs
-            ]
+            result["associations"] = [a.model_dump(mode="json") for a in assocs]
 
         if drugs:
             drug_list = client.get_target_drugs(target_id)
@@ -221,9 +215,7 @@ def targets(
 
 @app.command()
 def disease(
-    disease_id: str = typer.Argument(
-        ..., help="EFO identifier (e.g. EFO_0000311)"
-    ),
+    disease_id: str = typer.Argument(..., help="EFO identifier (e.g. EFO_0000311)"),
     show_targets: bool = typer.Option(
         False, "--targets", help="Include associated targets"
     ),
@@ -239,9 +231,7 @@ def disease(
 
         if show_targets:
             assocs = client.get_disease_targets(disease_id, limit=limit)
-            result["targets"] = [
-                a.model_dump(mode="json") for a in assocs
-            ]
+            result["targets"] = [a.model_dump(mode="json") for a in assocs]
 
     except (NotFoundError, APIError, QueryError) as exc:
         if debug:
@@ -287,9 +277,7 @@ def disease(
 
 @app.command()
 def drug(
-    drug_id: str = typer.Argument(
-        ..., help="ChEMBL identifier (e.g. CHEMBL941)"
-    ),
+    drug_id: str = typer.Argument(..., help="ChEMBL identifier (e.g. CHEMBL941)"),
     indications: bool = typer.Option(
         False, "--indications", help="Include disease indications"
     ),

@@ -136,9 +136,7 @@ async def test_async_get_target_drugs(search_response: dict) -> None:
 @pytest.mark.asyncio
 @respx.mock
 async def test_async_get_disease(disease_response: dict) -> None:
-    respx.post(_GQL_URL).mock(
-        return_value=httpx.Response(200, json=disease_response)
-    )
+    respx.post(_GQL_URL).mock(return_value=httpx.Response(200, json=disease_response))
     async with AsyncOpenTargetsClient(cache=False) as client:
         disease = await client.get_disease("EFO_0003060")
     assert disease.id == "EFO_0003060"
@@ -197,9 +195,7 @@ async def test_async_get_disease_targets(disease_response: dict) -> None:
 @pytest.mark.asyncio
 @respx.mock
 async def test_async_get_drug(drug_response: dict) -> None:
-    respx.post(_GQL_URL).mock(
-        return_value=httpx.Response(200, json=drug_response)
-    )
+    respx.post(_GQL_URL).mock(return_value=httpx.Response(200, json=drug_response))
     async with AsyncOpenTargetsClient(cache=False) as client:
         drug = await client.get_drug("CHEMBL939")
     assert drug.id == "CHEMBL939"
@@ -234,9 +230,7 @@ async def test_async_get_drug_indications(drug_indications_response: dict) -> No
 @pytest.mark.asyncio
 @respx.mock
 async def test_async_search_returns_results(search_response: dict) -> None:
-    respx.post(_GQL_URL).mock(
-        return_value=httpx.Response(200, json=search_response)
-    )
+    respx.post(_GQL_URL).mock(return_value=httpx.Response(200, json=search_response))
     async with AsyncOpenTargetsClient(cache=False) as client:
         results = await client.search("EGFR", entity_type="target", limit=1)
     assert len(results) == 1

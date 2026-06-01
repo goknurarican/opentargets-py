@@ -314,9 +314,7 @@ class OpenTargetsClient:
         """
         ensembl_id = self._resolve_target(target_id)
         data = self._gql.execute(TARGET_EXPRESSION_QUERY, {"ensemblId": ensembl_id})
-        rows: list[dict[str, Any]] = (data.get("target") or {}).get(
-            "expressions"
-        ) or []
+        rows: list[dict[str, Any]] = (data.get("target") or {}).get("expressions") or []
         return [_parse_tissue_expression(r) for r in rows]
 
     def get_target_constraint(self, target_id: str) -> list[GeneticConstraint]:
@@ -858,5 +856,3 @@ def _to_dataframe(associations: list[Association]) -> pd.DataFrame:
         ) from exc
 
     return pd.DataFrame([a.model_dump() for a in associations])
-
-
