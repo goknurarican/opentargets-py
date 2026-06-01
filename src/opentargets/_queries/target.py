@@ -73,3 +73,103 @@ query TargetsBatch($ids: [String!]!) {
   }
 }
 """
+
+TARGET_TRACTABILITY_QUERY = """
+query TargetTractability($ensemblId: String!) {
+  target(ensemblId: $ensemblId) {
+    id
+    tractability {
+      modality
+      label
+      value
+    }
+  }
+}
+"""
+
+TARGET_SAFETY_QUERY = """
+query TargetSafety($ensemblId: String!) {
+  target(ensemblId: $ensemblId) {
+    id
+    safetyLiabilities {
+      event
+      eventId
+      datasource
+      literature
+      url
+      effects {
+        direction
+        dosing
+      }
+      biosamples {
+        tissueLabel
+        tissueId
+        cellLabel
+        cellId
+      }
+    }
+  }
+}
+"""
+
+TARGET_EXPRESSION_QUERY = """
+query TargetExpression($ensemblId: String!) {
+  target(ensemblId: $ensemblId) {
+    id
+    expressions {
+      tissue {
+        id
+        label
+      }
+      rna {
+        value
+        level
+        zscore
+        unit
+      }
+      protein {
+        level
+        reliability
+      }
+    }
+  }
+}
+"""
+
+TARGET_CONSTRAINT_QUERY = """
+query TargetConstraint($ensemblId: String!) {
+  target(ensemblId: $ensemblId) {
+    id
+    geneticConstraint {
+      constraintType
+      obs
+      exp
+      oe
+      oeLower
+      oeUpper
+      score
+    }
+  }
+}
+"""
+
+TARGET_DRUGS_WITH_CHEMBL_QUERY = """
+query TargetDrugsWithChembl($ensemblId: String!) {
+  target(ensemblId: $ensemblId) {
+    id
+    drugAndClinicalCandidates {
+      count
+      rows {
+        drug {
+          id
+          name
+          crossReferences {
+            source
+            ids
+          }
+        }
+      }
+    }
+  }
+}
+"""

@@ -14,8 +14,17 @@ from .models import (
     Disease,
     Drug,
     DrugIndication,
+    GeneticConstraint,
+    ProteinExpression,
+    RnaExpression,
+    SafetyBiosample,
+    SafetyEffect,
+    SafetyLiability,
     SearchResult,
     Target,
+    TissueExpression,
+    TissueInfo,
+    Tractability,
 )
 
 __version__ = "0.1.0"
@@ -35,4 +44,14 @@ __all__ = [
     "DatasourceScore",
     "SearchResult",
     "DrugIndication",
+    # New models
+    "Tractability",
+    "SafetyLiability",
+    "SafetyBiosample",
+    "SafetyEffect",
+    "TissueExpression",
+    "TissueInfo",
+    "RnaExpression",
+    "ProteinExpression",
+    "GeneticConstraint",
 ]
