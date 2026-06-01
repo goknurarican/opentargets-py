@@ -89,25 +89,15 @@ module = "pandas"
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
-module = ["typer", "typer.*", "rich", "rich.*"]
+module = ["typer", "rich", "click", "fastmcp"]
 ignore_missing_imports = true
 follow_imports = "skip"
 
+# cli.py uses typer's @app.command and mcp_server.py uses fastmcp's @mcp.tool;
+# both decorators resolve to Any with follow_imports=skip, which strict mode
+# flags as untyped-decorator and can't be suppressed inline. Silence per-module.
 [[tool.mypy.overrides]]
-module = ["click", "click.*", "cyclopts", "cyclopts.*"]
-ignore_missing_imports = true
-follow_imports = "skip"
-
-[[tool.mypy.overrides]]
-module = ["fastmcp", "fastmcp.*", "mcp", "mcp.*"]
-ignore_missing_imports = true
-follow_imports = "skip"
-
-# mcp_server.py uses @mcp.tool decorators that resolve to Any once fastmcp
-# imports are skipped — strict mode flags this and the marker can't be
-# suppressed inline, so silence it at module level.
-[[tool.mypy.overrides]]
-module = "opentargets.mcp_server"
+module = ["opentargets.cli", "opentargets.mcp_server"]
 disable_error_code = ["untyped-decorator"]
 
 [tool.hatch.build.targets.wheel]
