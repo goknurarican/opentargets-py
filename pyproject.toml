@@ -4,13 +4,13 @@ build-backend = "hatchling.build"
 
 [project]
 name = "opentargets-py"
-version = "0.2.1"
+version = "0.2.2"
 description = "Unofficial community-maintained Python client for the Open Targets Platform GraphQL API"
 readme = "README.md"
 license = "Apache-2.0"
 requires-python = ">=3.9"
 authors = [
-    { name = "Göknur Arıcan", email = "gknrperiarican@gmail.com" },
+    { name = "Göknur Arıcan", email = "goknurarican@gmail.com" },
 ]
 keywords = [
     "opentargets", "bioinformatics", "drug-discovery",

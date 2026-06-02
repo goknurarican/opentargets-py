@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.2.2] - 2026-06-02
+
+### Changed
+- Update author contact email shown on PyPI.
+
 ## [0.2.1] - 2026-06-02
 
 ### Fixed
