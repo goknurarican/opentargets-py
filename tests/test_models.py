@@ -74,3 +74,38 @@ def test_search_result_entity_alias():
         }
     )
     assert sr.entity_type == "target"
+
+
+def test_search_result_null_description_coerced():
+    # API returns null description for some hit types (e.g. study).
+    sr = SearchResult.model_validate(
+        {"id": "GCST1", "name": "study", "entity": "study", "description": None}
+    )
+    assert sr.description == ""
+
+
+def test_target_null_description_coerced():
+    t = Target.model_validate(
+        {
+            "id": "ENSG1",
+            "approvedSymbol": "X",
+            "approvedName": "x",
+            "biotype": None,
+            "description": None,
+        }
+    )
+    assert t.biotype == ""
+    assert t.description == ""
+
+
+def test_disease_null_description_coerced():
+    d = Disease.model_validate({"id": "EFO1", "name": "d", "description": None})
+    assert d.description == ""
+
+
+def test_drug_null_string_fields_coerced():
+    dr = Drug.model_validate(
+        {"id": "C1", "name": "x", "drugType": None, "mechanism_of_action": None}
+    )
+    assert dr.drug_type == ""
+    assert dr.mechanism_of_action == ""

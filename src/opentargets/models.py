@@ -4,10 +4,33 @@ from __future__ import annotations
 
 from typing import Optional
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
-class Target(BaseModel):
+class _OTBaseModel(BaseModel):
+    """Base for Open Targets response models.
+
+    Coerces ``None`` to ``""`` for any field annotated as ``str`` with a
+    default of ``""``. The GraphQL API explicitly returns ``null`` for some
+    description/name-style fields (e.g. ``description`` on ``study`` search
+    hits), which would otherwise fail Pydantic's strict string validation.
+    Required string fields are left alone — a null there is a real error.
+    """
+
+    @model_validator(mode="before")
+    @classmethod
+    def _none_str_to_empty(cls, data: object) -> object:
+        if not isinstance(data, dict):
+            return data
+        for name, field in cls.model_fields.items():
+            if field.annotation is str and field.default == "":
+                for key in (field.alias, name):
+                    if key and key in data and data[key] is None:
+                        data[key] = ""
+        return data
+
+
+class Target(_OTBaseModel):
     """A drug target (gene/protein) from the Open Targets Platform.
 
     Attributes:
@@ -33,7 +56,7 @@ class Target(BaseModel):
     model_config = ConfigDict(frozen=True, populate_by_name=True)
 
 
-class Disease(BaseModel):
+class Disease(_OTBaseModel):
     """A disease or phenotype from the Open Targets Platform.
 
     Attributes:
@@ -53,7 +76,7 @@ class Disease(BaseModel):
     db_x_refs: list[str] = Field(default_factory=list, alias="dbXRefs")
 
 
-class Drug(BaseModel):
+class Drug(_OTBaseModel):
     """A drug or compound from the Open Targets Platform.
 
     Attributes:
@@ -79,7 +102,7 @@ class Drug(BaseModel):
     chembl_ids: list[str] = Field(default_factory=list)
 
 
-class DatasourceScore(BaseModel):
+class DatasourceScore(_OTBaseModel):
     """A per-datasource association score.
 
     Attributes:
@@ -93,7 +116,7 @@ class DatasourceScore(BaseModel):
     score: float
 
 
-class Association(BaseModel):
+class Association(_OTBaseModel):
     """A target–disease association with evidence scores.
 
     Attributes:
@@ -117,7 +140,7 @@ class Association(BaseModel):
     evidence_count: int = 0
 
 
-class SearchResult(BaseModel):
+class SearchResult(_OTBaseModel):
     """A single result from the platform-wide search endpoint.
 
     Attributes:
@@ -137,7 +160,7 @@ class SearchResult(BaseModel):
     score: float = 0.0
 
 
-class DrugIndication(BaseModel):
+class DrugIndication(_OTBaseModel):
     """A disease indication for a given drug.
 
     Attributes:
@@ -158,7 +181,7 @@ class DrugIndication(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-class Tractability(BaseModel):
+class Tractability(_OTBaseModel):
     """A tractability assessment for a target.
 
     Attributes:
@@ -174,7 +197,7 @@ class Tractability(BaseModel):
     value: bool
 
 
-class SafetyBiosample(BaseModel):
+class SafetyBiosample(_OTBaseModel):
     """Biosample information from a safety liability entry.
 
     Attributes:
@@ -192,7 +215,7 @@ class SafetyBiosample(BaseModel):
     cell_id: Optional[str] = Field(None, alias="cellId")
 
 
-class SafetyEffect(BaseModel):
+class SafetyEffect(_OTBaseModel):
     """An effect associated with a safety liability entry.
 
     Attributes:
@@ -206,7 +229,7 @@ class SafetyEffect(BaseModel):
     dosing: Optional[str] = None
 
 
-class SafetyLiability(BaseModel):
+class SafetyLiability(_OTBaseModel):
     """A safety liability entry for a target.
 
     Attributes:
@@ -230,7 +253,7 @@ class SafetyLiability(BaseModel):
     event_id: Optional[str] = Field(None, alias="eventId")
 
 
-class TissueInfo(BaseModel):
+class TissueInfo(_OTBaseModel):
     """Tissue identity from expression data.
 
     Attributes:
@@ -244,7 +267,7 @@ class TissueInfo(BaseModel):
     label: str
 
 
-class RnaExpression(BaseModel):
+class RnaExpression(_OTBaseModel):
     """RNA expression values for a tissue.
 
     Attributes:
@@ -262,7 +285,7 @@ class RnaExpression(BaseModel):
     unit: str
 
 
-class ProteinExpression(BaseModel):
+class ProteinExpression(_OTBaseModel):
     """Protein expression values for a tissue.
 
     Attributes:
@@ -276,7 +299,7 @@ class ProteinExpression(BaseModel):
     reliability: bool
 
 
-class TissueExpression(BaseModel):
+class TissueExpression(_OTBaseModel):
     """Baseline tissue expression for a target.
 
     Attributes:
@@ -292,7 +315,7 @@ class TissueExpression(BaseModel):
     protein: ProteinExpression
 
 
-class GeneticConstraint(BaseModel):
+class GeneticConstraint(_OTBaseModel):
     """gnomAD genetic constraint metric for a target.
 
     Attributes:
